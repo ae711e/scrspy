@@ -7,25 +7,19 @@
   Модель, выполняет прием данных из АС Р., вычисления и т.д.
  */
 
-package job;
+package screenshot;
 
 import ae.LoadJSON;
 import image.UrlImage;
 import org.json.JSONArray;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+
+import static ae.R.datetime2unix;
 
 // модель
 class Model {
-  // формат преобразования времени
-  private final DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-  // смещение текущей временной зоны (для вычисление в datetime2unux)
-  private final ZoneOffset zoneOffset = OffsetDateTime.now(ZoneId.systemDefault()).getOffset ();
+  private static String DatabaseName = "scrspy.db";      // имя базы данных для кэшей
 
   private String              act_num;      // номер акта (справочно)
   private int                 id_act;       // код акта
@@ -205,7 +199,7 @@ class Model {
     if(!isscr) {
       strResult("Скриншотов нет, все записи можно удалять");
     }
-    UrlImage uimage = new UrlImage(act_num);
+    UrlImage uimage = new UrlImage(DatabaseName, act_num);
     for(int i=0; i < n; i++) {
       try {
         LoadJSON ll = new LoadJSON(ja.get(i));
@@ -240,7 +234,7 @@ class Model {
    */
   public void CheckUrls()
   {
-    UrlImage uimage = new UrlImage("check");
+    UrlImage uimage = new UrlImage(DatabaseName, "check");
     int a  = uimage.checkAllHash();
     System.out.println("Изменилось URL: " + a);
   }
@@ -255,37 +249,6 @@ class Model {
     //result += str + "\r\n";
     System.out.println(str);
   }
-
-  /**
-   * первод даты в секунды эпохи Unix-epoch, если указана только дата, то время считается 00:00:00
-   * @param sdat дата в виде YYYY-MM-DD hh:mm:ss
-   * @return секунды
-   */
-  private long datetime2unix(String sdat)
-  {
-    // dateFmt - формат преобразования времени
-    // zoneOffset - смещение текущей временной зоны (для вычисление в datetime2unux)
-
-    long t;
-    try {
-      String  str;
-      // указана только дата
-      if(sdat.matches("\\d+-\\d+-\\d+$")) {
-        str = sdat + " 00:00:00";
-      } else {
-        str = sdat;
-      }
-      LocalDateTime dt = LocalDateTime.parse(str, dateFmt);
-      // @see https://stackoverflow.com/questions/41427384/how-to-get-default-zoneoffset-in-java8
-      // ZoneOffset zoneOffset = OffsetDateTime.now(ZoneId.systemDefault()).getOffset ();
-      t = dt.toEpochSecond(zoneOffset);
-    } catch(Exception e) {
-      System.out.println("?-Error datetime2unix(" + sdat + "): " + e.getMessage());
-      t = 0;
-    }
-    return t;
-  }
-
 
   //////////////////////////////////////////////////////////////
   // вложенные классы

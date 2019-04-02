@@ -4,7 +4,6 @@ package ae;
  Загрузка объекта JSON из АС Р.
  */
 
-import job.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 

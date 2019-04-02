@@ -12,7 +12,7 @@ package image;
 import ae.ContentHttp;
 import ae.Database;
 import ae.DatabaseSqlite;
-import job.R;
+import ae.R;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public class UrlImage {
   private Database  db;                   // база данных кэшей
   // имя БД
-  private final String dbname = R.DatabaseName;
+  private String dbname;
   private String  act;  // акт
   // запрос создания таблицы хранения списков IP-адресов
   private final String create_table =
@@ -41,8 +41,9 @@ public class UrlImage {
   //
   private HashImage hashImage = new HashImage();  // объект для вычисления хэш
 
-  public UrlImage(String act)
+  public UrlImage(String dbName, String act)
   {
+    this.dbname = dbName;
     this.act = act; // акт, для которого записываем url
     init();
   }

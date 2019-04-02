@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2019. Aleksey Eremin
- * 05.02.19 9:29
+ * 29.03.19 11:22
  */
 
 /*
-  Отслеживаем изменения скриншотов в АС Ревизор
+  Считываю рейнтинги операторов из АС Ревизор
  */
 
-package job;
+package screenshot;
 
 public class Main {
 
   public static void main(String[] args) {
-    System.out.println("Версия " + R.Ver);
+    System.out.println("Рейтинги Ревизора v 1.0");
     Model mdl = new Model();
     // write your code here
     if(args.length > 0) {
@@ -22,4 +22,5 @@ public class Main {
       mdl.CheckUrls();
     }
   }
+
 }

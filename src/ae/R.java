@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2019. Aleksey Eremin
- * 05.02.19 9:29
+ * 29.03.19 8:24
  */
 
 /*
@@ -8,7 +8,7 @@
  * 07.09.18 10:59
  */
 
-package job;
+package ae;
 
 /*
  * Ресурсный класс
@@ -21,10 +21,13 @@ Modify:
 */
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 public class R {
-  public final static String Ver = "1.0"; // номер версии
-
   public final static String  sep  = System.getProperty("file.separator"); // разделитель имени каталогов
   public final static String  TMP  = System.getProperty("java.io.tmpdir"); // временный каталог
   //
@@ -36,8 +39,6 @@ public class R {
   public static String siteRevizor = _r.site;       // сайт
   public static String SiteUsr     = _r.usr;        // пользователь на сайте
   public static String SitePwd     = _r.pwd;        // пароль на сайт
-  //
-  public static String DatabaseName = "scrspy.db";      // имя базы данных для кэшей
   //
   public static int    Pause        = 300;          // пауза перед запросом изображения (мс)
   public static int    ImageTTL    = 365*86400;          // время жизни записи в списке кэша изображения (сек) - 365 сут
@@ -156,5 +157,68 @@ public class R {
     element.delete();
   }
 
+  // смещение текущей временной зоны (для вычисление в datetime2unux)
+  private static final ZoneOffset zoneOffset = OffsetDateTime.now(ZoneId.systemDefault()).getOffset();
+
+  /**
+   * перевод строки дата-время в секунды эпохи Unix-epoch, если указана только дата, то время считается 00:00:00
+   * @param sdat дата в виде YYYY-MM-DD[ hh:mm[:ss]] или DD.MM.YYYY[ hh:mm[:ss]]
+   * @return секунды Юникс-эпохи
+   */
+  public static long datetime2unix(String sdat)
+  {
+    long t;
+    String str;
+    DateTimeFormatter dtf;  // формат преобразования времени
+    if(sdat.matches("\\d+-\\d+-\\d+.*"))
+      dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // дата вида YYYY-MM-DD
+    else
+      dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"); // дата вида DD.MM.YYYY
+    // указана только дата ?
+    if(sdat.matches("\\d+[-.]\\d+[-.]\\d+$")) {
+      str = sdat + " 00:00:00"; // добавим время
+    } else {
+      if(sdat.matches("\\d+:\\d+:\\d+$"))
+        str = sdat;         //  дата указана со временем
+      else
+        str = sdat + ":00"; // допишем секунды ко времени если их нет
+    }
+    try {
+      // DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+      LocalDateTime dt = LocalDateTime.parse(str, dtf);
+      // @see https://stackoverflow.com/questions/41427384/how-to-get-default-zoneoffset-in-java8
+      // ZoneOffset zoneOffset = OffsetDateTime.now(ZoneId.systemDefault()).getOffset ();
+      t = dt.toEpochSecond(zoneOffset);
+    } catch(Exception e) {
+      System.out.println("?-Error datetime2unix(" + str + "): " + e.getMessage());
+      return 0;
+    }
+    return t;
+  }
+
+  /**
+   * Преобразовать Unix-epoch секунды в строку даты-времени по шаблону
+   * @param tm  юникс секунды
+   * @param pattern шаблон форматирования строки дата-время
+   * @return  строка даты, времени в заданном формате
+   */
+  public static String  unix2str(long tm, String pattern)
+  {
+    DateTimeFormatter dft = DateTimeFormatter.ofPattern(pattern);
+    LocalDateTime ld = LocalDateTime.ofEpochSecond(tm,0,zoneOffset);
+    String str;
+    str = dft.format(ld);
+    return str;
+  }
+
+  /**
+   * Преобразовать Unix-epoch секунды в строку даты
+   * @param tm  юникс секунды
+   * @return  строка даты, времени в формате YYYY-MM-DD
+   */
+  public static String  unix2date(long tm)
+  {
+    return unix2str(tm, "yyyy-MM-dd");
+  }
 
 } // end of class
